@@ -28,35 +28,37 @@
         const container = document.getElementById('calendar-container');
         
         try {
-            // 공공 경제 캘린더 데이터 피드 연동
-            const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
-            if (!response.ok) throw new Error('데이터 서버에 연결할 수 없습니다.');
+            // CORS 우회를 지원하는 안정적인 금융 데이터 소스 연동
+            const response = await fetch('https://economia.awesomeapi.com.br/json/all');
+            if (!response.ok) throw new Error('데이터를 불러오지 못했습니다.');
             
             const data = await response.json();
             container.innerHTML = ''; 
 
-            if (!data || data.length === 0) {
-                container.innerHTML = '<p style="text-align: center;">이번 주 예정된 경제 이벤트가 없습니다.</p>';
+            // 데이터 포맷팅 및 출력
+            const entries = Object.values(data);
+            if (entries.length === 0) {
+                container.innerHTML = '<p style="text-align: center;">등록된 경제 지표가 없습니다.</p>';
                 return;
             }
 
-            data.forEach(item => {
-                const eventDate = new Date(item.date);
-                const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
-                const kstTimeString = eventDate.toLocaleString('ko-KR', kstOptions);
+            entries.forEach(item => {
+                const updateDate = new Date(item.create_date || Date.now());
+                const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+                const kstTimeString = updateDate.toLocaleString('ko-KR', kstOptions);
 
                 const card = document.createElement('div');
                 card.className = 'event-card';
                 card.innerHTML = `
-                    <div class="time">⏰ ${kstTimeString}</div>
-                    <div class="title">[${item.country}] ${item.title}</div>
-                    <div class="details">영향도: ${item.impact} | 예측: ${item.forecast || '발표 전'} | 이전: ${item.previous || '-'}</div>
+                    <div class="time">⏰ 실시간 기준: ${kstTimeString}</div>
+                    <div class="title">[통화 지표] ${item.name} (${item.code})</div>
+                    <div class="details">현재 환율/가격: ${item.bid} | 변동률: ${item.pctChange}% | 최고: ${item.high} | 최저: ${item.low}</div>
                 `;
                 container.appendChild(card);
             });
 
         } catch (error) {
-            container.innerHTML = `<p style="text-align: center; color: #e74c3c;">데이터를 불러오는 중 문제가 발생했습니다.<br>잠시 후 다시 시도해 주세요.</p>`;
+            container.innerHTML = `<p style="text-align: center; color: #e74c3c;">데이터 연동 중 오류가 발생했습니다.</p>`;
         }
     }
 
@@ -65,4 +67,3 @@
 
 </body>
 </html>
-
