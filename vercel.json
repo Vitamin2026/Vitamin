@@ -1,6 +1,5 @@
 {
-  "routes": [
-    { "src": "/api/calendar", "dest": "/api/calendar.js" },
-    { "src": "/(.*)", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/api/calendar", "destination": "/api/calendar.js" }
   ]
 }
