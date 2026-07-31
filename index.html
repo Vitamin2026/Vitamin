@@ -3,12 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitamin 만능달력</title>
+    <title>Vitamin 만능달력 (자동 연동)</title>
     <style>
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
         
-        /* 상단 범례 태그 */
         .legend-box { background: #f8f9fa; padding: 8px; border-radius: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; font-size: 12px; margin-bottom: 12px; border: 1px solid #eee; }
         .legend-item { display: flex; align-items: center; gap: 4px; }
         .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
@@ -17,14 +16,12 @@
         .dot-purple { background-color: #6f42c1; }
         .dot-gray { background-color: #6c757d; }
 
-        /* 컨트롤러 (년월 및 버튼) */
         .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
         .nav-group { display: flex; gap: 5px; }
         .btn { background: #2c3e50; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
         .btn:hover { background: #34495e; }
         .title-date { font-size: 18px; font-weight: bold; color: #2c3e50; }
 
-        /* 달력 테이블 그리드 */
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { background: #fff; color: #333; font-size: 13px; padding: 8px 0; border-bottom: 2px solid #ddd; }
         td { height: 75px; border: 1px solid #e9ecef; vertical-align: top; padding: 3px; font-size: 11px; background: #fff; }
@@ -32,20 +29,19 @@
         
         .day-num { font-weight: bold; margin-bottom: 2px; font-size: 12px; text-align: right; padding-right: 2px; }
         
-        /* 일정 태그 스타일 */
         .event-badge { font-size: 9px; padding: 2px 3px; border-radius: 3px; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; text-align: center; }
         .badge-blue { background-color: #007bff; }
         .badge-red { background-color: #dc3545; }
         .badge-purple { background-color: #6f42c1; }
         .badge-gray { background-color: #6c757d; }
+        .loading { text-align: center; padding: 10px; font-size: 12px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #e67e22;">🍊 비타민 고영향 경제 뉴스</div>
+    <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #e67e22;">🍊 비타민 고영향 경제 뉴스 (자동 연동)</div>
     
-    <!-- 범례 -->
     <div class="legend-box">
         <div class="legend-item"><span class="dot dot-blue"></span> 월물교체</div>
         <div class="legend-item"><span class="dot dot-red"></span> 주요지표(ET)</div>
@@ -53,17 +49,17 @@
         <div class="legend-item"><span class="dot dot-gray"></span> 휴장일/조기폐장</div>
     </div>
 
-    <!-- 헤더 컨트롤 -->
     <div class="calendar-header">
         <div class="nav-group">
             <button class="btn" onclick="changeMonth(-1)">◀</button>
             <button class="btn" onclick="changeMonth(1)">▶</button>
             <button class="btn" onclick="goToday()">today</button>
         </div>
-        <div id="year-month-title" class="title-date">2026년 8월</div>
+        <div id="year-month-title" class="title-date"></div>
     </div>
 
-    <!-- 달력 그리드 -->
+    <div id="loading-status" class="loading">실시간 데이터를 자동으로 불러오는 중...</div>
+
     <table>
         <thead>
             <tr>
@@ -77,99 +73,51 @@
 </div>
 
 <script>
-    // 2026년 전체 주요 일정 데이터베이스 (이미지 내용 반영)
-    const eventsData = {
-        // 1월
-        "2026-01-01": [{title: "New Year (휴장)", type: "gray"}],
-        "2026-01-09": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-01-16": [{title: "옵션 만기일", type: "purple"}],
-        "2026-01-19": [{title: "MLK Day (휴장)", type: "gray"}],
-        "2026-01-23": [{title: "GC(금) 롤오버 2->4월물", type: "blue"}],
-        "2026-01-28": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+    let apiEvents = {};
 
-        // 2월
-        "2026-02-11": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-02-13": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-02-16": [{title: "Presidents Day (휴장)", type: "gray"}],
-        "2026-02-20": [{title: "옵션 만기일", type: "purple"}, {title: "SI(은) 롤오버 3->5월물", type: "blue"}],
+    // Forex Factory API 또는 대체 경제 캘린더 API에서 데이터를 자동으로 가져오는 함수
+    async function fetchEconomicEvents() {
+        const statusEl = document.getElementById('loading-status');
+        statusEl.style.display = 'block';
+        
+        try {
+            // Forex Factory 공개 JSON 엔드포인트 호출
+            const response = await fetch('https://nfs.faireconomy.media/ff_calendar_thisweek.json');
+            if (!response.ok) throw new Error('API 응답 실패');
+            
+            const data = await response.json();
+            apiEvents = {}; // 초기화
 
-        // 3월
-        "2026-03-11": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-03-12": [{title: "NQ/ES 롤오버 3->6월물", type: "blue"}],
-        "2026-03-18": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-03-20": [{title: "네 마녀의 날", type: "purple"}],
-        "2026-03-24": [{title: "GC(금) 롤오버 4->6월물", type: "blue"}],
-        "2026-03-27": [{title: "Good Friday (휴장)", type: "gray"}, {title: "Non-Farm 고용 08:30 ET", type: "red"}],
+            data.forEach(item => {
+                // 날짜 파싱 (예: "2026-06-05T08:30:00-04:00")
+                const datePart = item.date.split('T')[0];
+                
+                // 중요도나 영향력에 따른 색상 분류 (High 임팩트는 빨간색 등)
+                let type = 'red';
+                if (item.impact === 'Medium') type = 'blue';
+                if (item.impact === 'Low') type = 'gray';
 
-        // 4월
-        "2026-04-03": [{title: "Good Friday (휴장)", type: "gray"}, {title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-04-10": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-04-17": [{title: "옵션 만기일", type: "purple"}],
-        "2026-04-23": [{title: "SI(은) 롤오버 5->7월물", type: "blue"}],
-        "2026-04-29": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+                if (!apiEvents[datePart]) {
+                    apiEvents[datePart] = [];
+                }
 
-        // 5월
-        "2026-05-08": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-05-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-05-15": [{title: "옵션 만기일", type: "purple"}],
-        "2026-05-21": [{title: "GC(금) 롤오버 6->8월물", type: "blue"}],
-        "2026-05-25": [{title: "Memorial Day (휴장)", type: "gray"}],
+                apiEvents[datePart].push({
+                    title: `${item.title} (${item.time})`,
+                    type: type
+                });
+            });
 
-        // 6월
-        "2026-06-05": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-06-10": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-06-11": [{title: "NQ/ES 롤오버 6->9월물", type: "blue"}],
-        "2026-06-17": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-06-19": [{title: "네 마녀의 날", type: "purple"}, {title: "Juneteenth (휴장)", type: "gray"}],
-        "2026-06-23": [{title: "SI(은) 롤오버 7->9월물", type: "blue"}],
+            statusEl.style.display = 'none';
+        } catch (error) {
+            console.error('자동 데이터 연동 오류:', error);
+            statusEl.innerText = '실시간 데이터 로드 실패 (기본 화면 표시)';
+            setTimeout(() => { statusEl.style.display = 'none'; }, 2000);
+        }
 
-        // 7월
-        "2026-07-02": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-07-03": [{title: "Independence (휴장)", type: "gray"}],
-        "2026-07-14": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-07-17": [{title: "옵션 만기일", type: "purple"}],
-        "2026-07-23": [{title: "GC(금) 롤오버 8->12월물", type: "blue"}],
-        "2026-07-29": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-
-        // 8월
-        "2026-08-07": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-08-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-08-21": [{title: "옵션 만기일", type: "purple"}],
-        "2026-08-24": [{title: "SI(은) 롤오버 9->12월물", type: "blue"}],
-
-        // 9월
-        "2026-09-04": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-09-07": [{title: "Labor Day (휴장)", type: "gray"}],
-        "2026-09-10": [{title: "NQ/ES 롤오버 9->12월물", type: "blue"}],
-        "2026-09-11": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-09-16": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-09-18": [{title: "네 마녀의 날", type: "purple"}],
-
-        // 10월
-        "2026-10-02": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-10-14": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-10-16": [{title: "옵션 만기일", type: "purple"}],
-        "2026-10-28": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-
-        // 11월
-        "2026-11-06": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-11-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-11-20": [{title: "옵션 만기일", type: "purple"}, {title: "GC(금) 롤오버 12->2월물", type: "blue"}],
-        "2026-11-23": [{title: "SI(은) 롤오버 12->3월물", type: "blue"}],
-        "2026-11-26": [{title: "Thanksgiving (휴장)", type: "gray"}],
-        "2026-11-27": [{title: "조기폐장 13:00 ET", type: "gray"}],
-
-        // 12월
-        "2026-12-04": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-12-09": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-12-10": [{title: "CPI 발표 08:30 ET", type: "red"}, {title: "NQ/ES 롤오버 12->3월물", type: "blue"}],
-        "2026-12-18": [{title: "네 마녀의 날", type: "purple"}],
-        "2026-12-24": [{title: "조기폐장 13:00 ET", type: "gray"}],
-        "2026-12-25": [{title: "Christmas (휴장)", type: "gray"}]
-    };
-
-    let currentYear = 2026;
-    let currentMonth = 7; // 0부터 시작하므로 7은 8월
+        renderCalendar(currentYear, currentMonth);
+    }
 
     function renderCalendar(year, month) {
         const titleEl = document.getElementById('year-month-title');
@@ -178,23 +126,18 @@
         titleEl.innerText = `${year}년 ${month + 1}월`;
         bodyEl.innerHTML = '';
 
-        // 해당 월의 첫 날 요일 구하기 (주말인 토, 일은 제외하고 월~금 기준 뷰 구성)
         const firstDay = new Date(year, month, 1);
-        const lastDay = new Date(year, month + 1, 0);
-        
         let startDate = new Date(firstDay);
-        // 월요일(1)부터 시작하도록 조정
         let dayOfWeek = startDate.getDay();
-        if (dayOfWeek === 0) dayOfWeek = 7; // 일요일
+        if (dayOfWeek === 0) dayOfWeek = 7;
         startDate.setDate(startDate.getDate() - (dayOfWeek - 1));
 
         let html = '';
         let currentDate = new Date(startDate);
 
-        // 6주치 반복 (달력 격자 칸수 채우기)
         for (let week = 0; week < 6; week++) {
             html += '<tr>';
-            for (let i = 0; i < 5; i++) { // 월~금 (5일)
+            for (let i = 0; i < 5; i++) {
                 const y = currentDate.getFullYear();
                 const m = String(currentDate.getMonth() + 1).padStart(2, '0');
                 const d = String(currentDate.getDate()).padStart(2, '0');
@@ -203,10 +146,9 @@
                 const isOtherMonth = currentDate.getMonth() !== month;
                 const dayNum = currentDate.getDate();
 
-                // 해당 날짜의 이벤트 가져오기
                 let eventsHtml = '';
-                if (eventsData[dateString]) {
-                    eventsData[dateString].forEach(ev => {
+                if (apiEvents[dateString]) {
+                    apiEvents[dateString].forEach(ev => {
                         eventsHtml += `<span class="event-badge badge-${ev.type}">${ev.title}</span>`;
                     });
                 }
@@ -220,7 +162,6 @@
 
                 currentDate.setDate(currentDate.getDate() + 1);
             }
-            // 주말(토, 일) 건너뛰기
             currentDate.setDate(currentDate.getDate() + 2);
             html += '</tr>';
         }
@@ -247,8 +188,8 @@
         renderCalendar(currentYear, currentMonth);
     }
 
-    // 초기 실행 (현재 시간 기준 또는 2026년 8월 기본)
-    renderCalendar(currentYear, currentMonth);
+    // 페이지 로드 시 실시간 데이터 자동 호출
+    fetchEconomicEvents();
 </script>
 
 </body>
