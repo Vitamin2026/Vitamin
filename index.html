@@ -40,8 +40,18 @@
             }
 
             data.forEach(item => {
+                // Forex Factory 날짜 형식(ISO)을 정확히 파싱
                 const eventDate = new Date(item.date);
-                const kstOptions = { timeZone: 'Asia/Seoul', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' };
+                
+                const kstOptions = { 
+                    timeZone: 'Asia/Seoul', 
+                    year: 'numeric', 
+                    month: '2-digit', 
+                    day: '2-digit', 
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: true 
+                };
                 const kstTimeString = eventDate.toLocaleString('ko-KR', kstOptions);
 
                 let borderColor = '#3498db';
