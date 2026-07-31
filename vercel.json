@@ -1,0 +1,6 @@
+{
+  "routes": [
+    { "src": "/api/calendar", "dest": "/api/calendar.js" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ]
+}
