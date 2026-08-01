@@ -86,7 +86,7 @@
         .calc-title { font-size: 18px; font-weight: bold; color: #2c3e50; margin-bottom: 15px; }
         .calc-group { margin-bottom: 14px; }
         .calc-group label { display: block; font-weight: bold; margin-bottom: 6px; font-size: 13px; color: #333; }
-        .calc-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; outline: none; }
+        .calc-group input { width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; outline: none; box-sizing: border-box; }
         .calc-group input:focus { border-color: #007bff; }
         .help-text { font-size: 11px; color: #666; margin-top: 4px; }
         .calc-btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: bold; cursor: pointer; margin-top: 5px; }
@@ -146,18 +146,18 @@
         
         <div class="calc-group">
             <label>총 목표 수익 ($)</label>
-            <input type="number" id="target-profit" value="3000">
+            <input type="number" id="target-profit" placeholder="목표 수익을 입력하세요 (예: 3000)">
         </div>
 
         <div class="calc-group">
             <label>일관성 제한 비율 (%)</label>
-            <input type="number" id="consistency-limit" value="50">
+            <input type="number" id="consistency-limit" placeholder="제한 비율을 입력하세요 (예: 50)">
             <div class="help-text">예: 50 입력 시, 하루 수익이 총 목표 수익의 50%를 초과할 수 없음</div>
         </div>
 
         <div class="calc-group">
             <label>날짜별 일일 수익 입력 (쉼표로 구분)</label>
-            <input type="text" id="daily-profits" placeholder="예: 1800 또는 1000, 800" value="1800">
+            <input type="text" id="daily-profits" placeholder="예: 1000, 800 또는 1800">
             <div class="help-text">거래한 날들의 수익금을 콤마(,)로 구분해서 적어주세요.</div>
         </div>
 
@@ -343,10 +343,17 @@
 
     /* --- 트레이딩 일관성 계산기 로직 --- */
     function calculateConsistency() {
-        const target = parseFloat(document.getElementById('target-profit').value) || 0;
-        const limitPercent = parseFloat(document.getElementById('consistency-limit').value) || 0;
-        const profitsInput = document.getElementById('daily-profits').value;
+        const targetInput = document.getElementById('target-profit').value.trim();
+        const limitInput = document.getElementById('consistency-limit').value.trim();
+        const profitsInput = document.getElementById('daily-profits').value.trim();
 
+        if (!targetInput || !limitInput || !profitsInput) {
+            alert('모든 입력값을 채워주세요.');
+            return;
+        }
+
+        const target = parseFloat(targetInput) || 0;
+        const limitPercent = parseFloat(limitInput) || 0;
         const profits = profitsInput.split(',').map(item => parseFloat(item.trim())).filter(num => !isNaN(num));
 
         if (profits.length === 0) {
