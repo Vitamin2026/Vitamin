@@ -2,236 +2,105 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vitamin 만능달력</title>
+    <title>트레이딩 일관성 계산기</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f6f9; margin: 0; padding: 10px; color: #333; }
-        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 15px; border-radius: 8px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
-        
-        .legend-box { background: #f8f9fa; padding: 8px; border-radius: 6px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; font-size: 12px; margin-bottom: 12px; border: 1px solid #eee; }
-        .legend-item { display: flex; align-items: center; gap: 4px; }
-        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
-        .dot-blue { background-color: #007bff; }
-        .dot-red { background-color: #dc3545; }
-        .dot-purple { background-color: #6f42c1; }
-        .dot-gray { background-color: #6c757d; }
-
-        .calendar-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .nav-group { display: flex; gap: 5px; }
-        .btn { background: #2c3e50; color: #fff; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: bold; }
-        .btn:hover { background: #34495e; }
-        .title-date { font-size: 18px; font-weight: bold; color: #2c3e50; }
-
-        table { width: 100%; border-collapse: collapse; table-layout: fixed; }
-        th { background: #fff; color: #333; font-size: 13px; padding: 8px 0; border-bottom: 2px solid #ddd; }
-        
-        /* 날짜 칸 높이를 더 넉넉하게 확장 */
-        td { height: 115px; border: 1px solid #e9ecef; vertical-align: top; padding: 2px; font-size: 10px; background: #fff; }
-        td.other-month { background: #fdfdfd; color: #bbb; }
-        
-        .day-num { font-weight: bold; margin-bottom: 2px; font-size: 11px; text-align: right; padding-right: 2px; }
-        
-        /* 배지 스타일 최적화 (글자 잘림 방지 및 세로 정렬) */
-        .event-badge { font-size: 9px; padding: 3px 4px; border-radius: 4px; margin-bottom: 3px; color: #fff; display: flex; flex-direction: column; gap: 1px; }
-        .badge-blue { background-color: #007bff; }
-        .badge-red { background-color: #dc3545; }
-        .badge-purple { background-color: #6f42c1; }
-        .badge-gray { background-color: #6c757d; }
-        
-        .event-title { font-weight: bold; font-size: 9px; word-break: keep-all; line-height: 1.1; }
-        .event-time { background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 2px; font-size: 8px; align-self: flex-start; white-space: nowrap; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 30px; }
+        .container { max-width: 520px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        h2 { color: #333; text-align: center; margin-bottom: 25px; }
+        .input-group { margin-bottom: 18px; }
+        label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; }
+        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
+        .hint { font-size: 12px; color: #777; margin-top: 4px; display: block; }
+        button { width: 100%; background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; border-radius: 6px; font-size: 15px; line-height: 1.6; }
+        .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .info { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #e67e22;">🍊 비타민 고영향 경제 뉴스 (KST 기준)</div>
+    <h2>🎯 트레이딩 일관성 계산기</h2>
     
-    <div class="legend-box">
-        <div class="legend-item"><span class="dot dot-blue"></span> 월물교체</div>
-        <div class="legend-item"><span class="dot dot-red"></span> 주요지표(KST)</div>
-        <div class="legend-item"><span class="dot dot-purple"></span> 만기일</div>
-        <div class="legend-item"><span class="dot dot-gray"></span> 휴장일/조기폐장</div>
+    <div class="input-group">
+        <label>총 목표 수익 ($)</label>
+        <input type="number" id="targetProfit" value="3000">
+    </div>
+    
+    <div class="input-group">
+        <label>일관성 제한 비율 (%)</label>
+        <input type="number" id="consistencyLimit" value="50">
+        <span class="hint">예: 50 입력 시, 하루 수익이 총 목표 수익의 50%를 초과할 수 없음</span>
+    </div>
+    
+    <div class="input-group">
+        <label>날짜별 일일 수익 입력 (쉼표로 구분)</label>
+        <input type="text" id="dailyProfits" placeholder="예: 1800 또는 1000, 800">
+        <span class="hint">거래한 날들의 수익금을 콤마(,)로 구분해서 적어주세요.</span>
     </div>
 
-    <div class="calendar-header">
-        <div class="nav-group">
-            <button class="btn" onclick="changeMonth(-1)">◀</button>
-            <button class="btn" onclick="changeMonth(1)">▶</button>
-            <button class="btn" onclick="goToday()">today</button>
-        </div>
-        <div id="year-month-title" class="title-date"></div>
-    </div>
+    <button onclick="calculateConsistency()">일관성 계산하기</button>
 
-    <table>
-        <thead>
-            <tr>
-                <th>월</th><th>화</th><th>수</th><th>목</th><th>금</th>
-            </tr>
-        </thead>
-        <tbody id="calendar-body">
-            <!-- 동적 생성 -->
-        </tbody>
-    </table>
+    <div id="resultBox" class="result" style="display:none;"></div>
 </div>
 
 <script>
-    const eventsData = {
-        "2026-01-01": [{title: "New Year", time: "휴장", type: "gray"}],
-        "2026-01-09": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
-        "2026-01-16": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-01-19": [{title: "MLK Day", time: "휴장", type: "gray"}],
-        "2026-01-23": [{title: "GC(금) 롤오버", time: "2->4월", type: "blue"}],
-        "2026-01-28": [{title: "FOMC 금리결정", time: "04:00 KST", type: "red"}],
+function calculateConsistency() {
+    const target = parseFloat(document.getElementById('targetProfit').value);
+    const limitPercent = parseFloat(document.getElementById('consistencyLimit').value);
+    const rawInput = document.getElementById('dailyProfits').value;
+    
+    const resultBox = document.getElementById('resultBox');
+    resultBox.style.display = 'block';
 
-        "2026-02-11": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
-        "2026-02-13": [{title: "CPI 발표", time: "22:30 KST", type: "red"}],
-        "2026-02-16": [{title: "Presidents Day", time: "휴장", type: "gray"}],
-        "2026-02-20": [{title: "옵션 만기일", time: "종일", type: "purple"}, {title: "SI(은) 롤오버", time: "3->5월", type: "blue"}],
-
-        "2026-03-11": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-03-12": [{title: "NQ/ES 롤오버", time: "3->6월", type: "blue"}],
-        "2026-03-18": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-        "2026-03-20": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
-        "2026-03-24": [{title: "GC(금) 롤오버", time: "4->6월", type: "blue"}],
-        "2026-03-27": [{title: "Good Friday", time: "휴장", type: "gray"}, {title: "Non-Farm", time: "21:30 KST", type: "red"}],
-
-        "2026-04-03": [{title: "Good Friday", time: "휴장", type: "gray"}, {title: "Non-Farm", time: "21:30 KST", type: "red"}],
-        "2026-04-10": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-04-17": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-04-23": [{title: "SI(은) 롤오버", time: "5->7월", type: "blue"}],
-        "2026-04-29": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-
-        "2026-05-08": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-05-12": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-05-15": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-05-21": [{title: "GC(금) 롤오버", time: "6->8월", type: "blue"}],
-        "2026-05-25": [{title: "Memorial Day", time: "휴장", type: "gray"}],
-
-        "2026-06-05": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-06-10": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-06-11": [{title: "NQ/ES 롤오버", time: "6->9월", type: "blue"}],
-        "2026-06-17": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-        "2026-06-19": [{title: "네 마녀의 날", time: "종일", type: "purple"}, {title: "Juneteenth", time: "휴장", type: "gray"}],
-        "2026-06-23": [{title: "SI(은) 롤오버", time: "7->9월", type: "blue"}],
-
-        "2026-07-02": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-07-03": [{title: "Independence", time: "휴장", type: "gray"}],
-        "2026-07-14": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-07-17": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-07-23": [{title: "GC(금) 롤오버", time: "8->12월", type: "blue"}],
-        "2026-07-29": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-
-        "2026-08-07": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-08-12": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-08-21": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-08-24": [{title: "SI(은) 롤오버", time: "9->12월", type: "blue"}],
-
-        "2026-09-04": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-09-07": [{title: "Labor Day", time: "휴장", type: "gray"}],
-        "2026-09-10": [{title: "NQ/ES 롤오버", time: "9->12월", type: "blue"}],
-        "2026-09-11": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-09-16": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-        "2026-09-18": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
-
-        "2026-10-02": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
-        "2026-10-14": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
-        "2026-10-16": [{title: "옵션 만기일", time: "종일", type: "purple"}],
-        "2026-10-28": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
-
-        "2026-11-06": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
-        "2026-11-12": [{title: "CPI 발표", time: "22:30 KST", type: "red"}],
-        "2026-11-20": [{title: "옵션 만기일", time: "종일", type: "purple"}, {title: "GC(금) 롤오버", time: "12->2월", type: "blue"}],
-        "2026-11-23": [{title: "SI(은) 롤오버", time: "12->3월", type: "blue"}],
-        "2026-11-26": [{title: "Thanksgiving", time: "휴장", type: "gray"}],
-        "2026-11-27": [{title: "조기폐장", time: "03:00 KST", type: "gray"}],
-
-        "2026-12-04": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
-        "2026-12-09": [{title: "FOMC 금리결정", time: "04:00 KST", type: "red"}],
-        "2026-12-10": [{title: "CPI 발표", time: "22:30 KST", type: "red"}, {title: "NQ/ES 롤오버", time: "12->3월", type: "blue"}],
-        "2026-12-18": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
-        "2026-12-24": [{title: "조기폐장", time: "03:00 KST", type: "gray"}],
-        "2026-12-25": [{title: "Christmas", time: "휴장", type: "gray"}]
-    };
-
-    let currentYear = 2026;
-    let currentMonth = 7; // 8월
-
-    function renderCalendar(year, month) {
-        const titleEl = document.getElementById('year-month-title');
-        const bodyEl = document.getElementById('calendar-body');
-        
-        titleEl.innerText = `${year}년 ${month + 1}월`;
-        bodyEl.innerHTML = '';
-
-        const firstDay = new Date(year, month, 1);
-        let startDate = new Date(firstDay);
-        let dayOfWeek = startDate.getDay();
-        if (dayOfWeek === 0) dayOfWeek = 7;
-        startDate.setDate(startDate.getDate() - (dayOfWeek - 1));
-
-        let html = '';
-        let currentDate = new Date(startDate);
-
-        for (let week = 0; week < 6; week++) {
-            html += '<tr>';
-            for (let i = 0; i < 5; i++) {
-                const y = currentDate.getFullYear();
-                const m = String(currentDate.getMonth() + 1).padStart(2, '0');
-                const d = String(currentDate.getDate()).padStart(2, '0');
-                const dateString = `${y}-${m}-${d}`;
-
-                const isOtherMonth = currentDate.getMonth() !== month;
-                const dayNum = currentDate.getDate();
-
-                let eventsHtml = '';
-                if (eventsData[dateString]) {
-                    eventsData[dateString].forEach(ev => {
-                        eventsHtml += `
-                            <div class="event-badge badge-${ev.type}">
-                                <span class="event-title">${ev.title}</span>
-                                <span class="event-time">${ev.time}</span>
-                            </div>
-                        `;
-                    });
-                }
-
-                html += `
-                    <td class="${isOtherMonth ? 'other-month' : ''}">
-                        <div class="day-num">${dayNum}일</div>
-                        ${eventsHtml}
-                    </td>
-                `;
-
-                currentDate.setDate(currentDate.getDate() + 1);
-            }
-            currentDate.setDate(currentDate.getDate() + 2);
-            html += '</tr>';
-        }
-
-        bodyEl.innerHTML = html;
+    if (isNaN(target) || isNaN(limitPercent) || !rawInput.trim()) {
+        resultBox.className = 'result fail';
+        resultBox.innerHTML = '⚠️ 모든 항목을 올바르게 입력해주세요.';
+        return;
     }
 
-    changeMonth = function(direction) {
-        currentMonth += direction;
-        if (currentMonth > 11) {
-            currentMonth = 0;
-            currentYear++;
-        } else if (currentMonth < 0) {
-            currentMonth = 11;
-            currentYear--;
-        }
-        renderCalendar(currentYear, currentMonth);
-    };
+    const profits = rawInput.split(',').map(item => parseFloat(item.trim())).filter(item => !isNaN(item));
+    
+    if (profits.length === 0) {
+        resultBox.className = 'result fail';
+        resultBox.innerHTML = '⚠️ 올바른 형식의 수익 데이터를 입력해주세요.';
+        return;
+    }
 
-    goToday = function() {
-        const now = new Date();
-        currentYear = now.getFullYear();
-        currentMonth = now.getMonth();
-        renderCalendar(currentYear, currentMonth);
-    };
+    const maxAllowedDayProfit = target * (limitPercent / 100);
+    const totalProfit = profits.reduce((a, b) => a + b, 0);
+    const maxDayProfit = Math.max(...profits);
+    let remainingProfit = target - totalProfit;
 
-    renderCalendar(currentYear, currentMonth);
+    let html = `<b>📊 계산 결과 요약</b><hr>`;
+    html += `• 총 달성 누적 수익: <b>$${totalProfit.toLocaleString()}</b> / 목표 $${target.toLocaleString()}<br>`;
+    html += `• 일일 최대 허용 한도 (${limitPercent}%): <b>$${maxAllowedDayProfit.toLocaleString()}</b><br>`;
+    html += `• 내가 기록한 최고 하루 수익: <b>$${maxDayProfit.toLocaleString()}</b><br>`;
+
+    if (maxDayProfit > maxAllowedDayProfit) {
+        const excessProfit = maxDayProfit - maxAllowedDayProfit; // 초과한 금액
+        const penaltyProfit = excessProfit * 2; // 초과한 금액의 2배
+        const adjustedRemaining = remainingProfit + penaltyProfit; // 페널티가 반영된 최종 남은 금액
+
+        resultBox.className = 'result fail';
+        html += `• 일관성 초과 금액: <b>$${excessProfit.toLocaleString()}</b><br>`;
+        html += `• 초과 금액의 2배 페널티: <b>+$${penaltyProfit.toLocaleString()}</b><br>`;
+        html += `• 페널티 반영된 최종 남은 금액: <b>$${adjustedRemaining > 0 ? adjustedRemaining.toLocaleString() : 0}</b><br><hr>`;
+        html += `❌ <b>결과: 일관성 규칙 위반 (Failed)</b><br>최고 하루 수익이 허용 한도를 초과하여, 초과분의 2배($${penaltyProfit.toLocaleString()})가 추가 목표로 부과되었습니다.<br>(최종 채워야 할 남은 금액: $${adjustedRemaining > 0 ? adjustedRemaining.toLocaleString() : 0})`;
+    } else if (totalProfit < target) {
+        resultBox.className = 'result info';
+        html += `• 목표까지 남은 금액: <b>$${remainingProfit.toLocaleString()}</b><br><hr>`;
+        html += `⏳ <b>결과: 진행 중 (In Progress)</b><br>현재까지 일관성 규칙은 안전하며, 목표까지 $${remainingProfit.toLocaleString()} 남았습니다.`;
+    } else {
+        resultBox.className = 'result pass';
+        html += `• 목표까지 남은 금액: <b>$0</b><br><hr>`;
+        html += `🎉 <b>결과: 일관성 통과 성공 (Passed)</b><br>목표 수익 달성과 일관성 규칙을 모두 충족했습니다!`;
+    }
+
+    resultBox.innerHTML = html;
+}
 </script>
 
 </body>
