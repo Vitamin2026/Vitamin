@@ -371,21 +371,24 @@
         }
 
         const penalty = excessAmount * 2;
-        let finalRemaining = target - totalEarned + penalty;
+        const finalTargetWithPenalty = target + penalty; // 페널티가 반영된 최종 목표가 계산
+        let finalRemaining = finalTargetWithPenalty - totalEarned;
         if (finalRemaining < 0) finalRemaining = 0;
 
         const isFailed = maxActualDaily > maxAllowedDaily;
 
         const resultContent = document.getElementById('result-content');
         resultContent.innerHTML = `
-            <div class="result-item">• 총 달성 누적 수익: <b>$${totalEarned.toLocaleString()}</b> / 목표 $${target.toLocaleString()}</div>
+            <div class="result-item">• 기본 목표 수익: <b>$${target.toLocaleString()}</b></div>
+            <div class="result-item">• 페널티 반영된 최종 목표가: <b>$${finalTargetWithPenalty.toLocaleString()}</b></div>
+            <div class="result-item">• 총 달성 누적 수익: <b>$${totalEarned.toLocaleString()}</b></div>
             <div class="result-item">• 일일 최대 허용 한도 (${limitPercent}%): <b>$${maxAllowedDaily.toLocaleString()}</b></div>
             <div class="result-item">• 내가 기록한 최고 하루 수익: <b>$${maxActualDaily.toLocaleString()}</b></div>
             <div class="result-item">• 일관성 초과 금액: <b>$${excessAmount.toLocaleString()}</b></div>
             <div class="result-item">• 초과 금액의 2배 페널티: <b>+$${penalty.toLocaleString()}</b></div>
-            <div class="result-item">• 페널티 반영된 최종 남은 금액: <b>$${finalRemaining.toLocaleString()}</b></div>
+            <div class="result-item">• 최종 남은 금액 (최종 목표 - 누적 수익): <b>$${finalRemaining.toLocaleString()}</b></div>
             <div class="result-status">
-                ${isFailed ? '❌ 결과: 일관성 규칙 위반 (Failed)<br><span style="font-weight:normal; font-size:12px; color:#333;">최고 하루 수익이 허용 한도를 초과하여, 초과분의 2배($' + penalty.toLocaleString() + ')가 추가 목표로 부과됩니다.</span>' : '✅ 결과: 일관성 준수 성공 (Passed)'}
+                ${isFailed ? '❌ 결과: 일관성 규칙 위반 (Failed)<br><span style="font-weight:normal; font-size:12px; color:#333;">최고 하루 수익이 허용 한도를 초과하여, 최종 목표가가 <b>$' + finalTargetWithPenalty.toLocaleString() + '</b>(기본 목표 + 페널티 $' + penalty.toLocaleString() + ')로 상향 조정됩니다.</span>' : '✅ 결과: 일관성 준수 성공 (Passed)'}
             </div>
         `;
 
