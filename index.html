@@ -24,26 +24,29 @@
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { background: #fff; color: #333; font-size: 13px; padding: 8px 0; border-bottom: 2px solid #ddd; }
-        td { height: 80px; border: 1px solid #e9ecef; vertical-align: top; padding: 3px; font-size: 11px; background: #fff; }
+        td { height: 90px; border: 1px solid #e9ecef; vertical-align: top; padding: 3px; font-size: 10px; background: #fff; }
         td.other-month { background: #fdfdfd; color: #bbb; }
         
-        .day-num { font-weight: bold; margin-bottom: 2px; font-size: 12px; text-align: right; padding-right: 2px; }
+        .day-num { font-weight: bold; margin-bottom: 3px; font-size: 11px; text-align: right; padding-right: 2px; }
         
-        .event-badge { font-size: 9px; padding: 2px 3px; border-radius: 3px; margin-bottom: 2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block; text-align: center; }
+        .event-badge { font-size: 9px; padding: 2px 4px; border-radius: 3px; margin-bottom: 2px; color: #fff; display: flex; justify-content: space-between; align-items: center; gap: 2px; }
         .badge-blue { background-color: #007bff; }
         .badge-red { background-color: #dc3545; }
         .badge-purple { background-color: #6f42c1; }
         .badge-gray { background-color: #6c757d; }
+        
+        .event-time { background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 2px; font-size: 8px; font-weight: bold; white-space: nowrap; }
+        .event-title { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #e67e22;">🍊 비타민 고영향 경제 뉴스</div>
+    <div style="text-align: center; font-weight: bold; font-size: 16px; margin-bottom: 8px; color: #e67e22;">🍊 비타민 고영향 경제 뉴스 (KST 기준)</div>
     
     <div class="legend-box">
         <div class="legend-item"><span class="dot dot-blue"></span> 월물교체</div>
-        <div class="legend-item"><span class="dot dot-red"></span> 주요지표(ET)</div>
+        <div class="legend-item"><span class="dot dot-red"></span> 주요지표(KST)</div>
         <div class="legend-item"><span class="dot dot-purple"></span> 만기일</div>
         <div class="legend-item"><span class="dot dot-gray"></span> 휴장일/조기폐장</div>
     </div>
@@ -70,83 +73,82 @@
 </div>
 
 <script>
-    // 2026년 전체 주요 마켓 일정 데이터베이스
     const eventsData = {
-        "2026-01-01": [{title: "New Year (휴장)", type: "gray"}],
-        "2026-01-09": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-01-16": [{title: "옵션 만기일", type: "purple"}],
-        "2026-01-19": [{title: "MLK Day (휴장)", type: "gray"}],
-        "2026-01-23": [{title: "GC(금) 롤오버 2->4월물", type: "blue"}],
-        "2026-01-28": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+        "2026-01-01": [{title: "New Year", time: "휴장", type: "gray"}],
+        "2026-01-09": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
+        "2026-01-16": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-01-19": [{title: "MLK Day", time: "휴장", type: "gray"}],
+        "2026-01-23": [{title: "GC(금) 롤오버", time: "2->4월", type: "blue"}],
+        "2026-01-28": [{title: "FOMC 금리결정", time: "04:00 KST", type: "red"}],
 
-        "2026-02-11": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-02-13": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-02-16": [{title: "Presidents Day (휴장)", type: "gray"}],
-        "2026-02-20": [{title: "옵션 만기일", type: "purple"}, {title: "SI(은) 롤오버 3->5월물", type: "blue"}],
+        "2026-02-11": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
+        "2026-02-13": [{title: "CPI 발표", time: "22:30 KST", type: "red"}],
+        "2026-02-16": [{title: "Presidents Day", time: "휴장", type: "gray"}],
+        "2026-02-20": [{title: "옵션 만기일", time: "종일", type: "purple"}, {title: "SI(은) 롤오버", time: "3->5월", type: "blue"}],
 
-        "2026-03-11": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-03-12": [{title: "NQ/ES 롤오버 3->6월물", type: "blue"}],
-        "2026-03-18": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-03-20": [{title: "네 마녀의 날", type: "purple"}],
-        "2026-03-24": [{title: "GC(금) 롤오버 4->6월물", type: "blue"}],
-        "2026-03-27": [{title: "Good Friday (휴장)", type: "gray"}, {title: "Non-Farm 고용 08:30 ET", type: "red"}],
+        "2026-03-11": [{title: "CPI 발표", time: "21:30 KST", type: "red"}], // 서머타임 적용 시작주
+        "2026-03-12": [{title: "NQ/ES 롤오버", time: "3->6월", type: "blue"}],
+        "2026-03-18": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
+        "2026-03-20": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
+        "2026-03-24": [{title: "GC(금) 롤오버", time: "4->6월", type: "blue"}],
+        "2026-03-27": [{title: "Good Friday", time: "휴장", type: "gray"}, {title: "Non-Farm", time: "21:30 KST", type: "red"}],
 
-        "2026-04-03": [{title: "Good Friday (휴장)", type: "gray"}, {title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-04-10": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-04-17": [{title: "옵션 만기일", type: "purple"}],
-        "2026-04-23": [{title: "SI(은) 롤오버 5->7월물", type: "blue"}],
-        "2026-04-29": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+        "2026-04-03": [{title: "Good Friday", time: "휴장", type: "gray"}, {title: "Non-Farm", time: "21:30 KST", type: "red"}],
+        "2026-04-10": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-04-17": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-04-23": [{title: "SI(은) 롤오버", time: "5->7월", type: "blue"}],
+        "2026-04-29": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
 
-        "2026-05-08": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-05-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-05-15": [{title: "옵션 만기일", type: "purple"}],
-        "2026-05-21": [{title: "GC(금) 롤오버 6->8월물", type: "blue"}],
-        "2026-05-25": [{title: "Memorial Day (휴장)", type: "gray"}],
+        "2026-05-08": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-05-12": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-05-15": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-05-21": [{title: "GC(금) 롤오버", time: "6->8월", type: "blue"}],
+        "2026-05-25": [{title: "Memorial Day", time: "휴장", type: "gray"}],
 
-        "2026-06-05": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-06-10": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-06-11": [{title: "NQ/ES 롤오버 6->9월물", type: "blue"}],
-        "2026-06-17": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-06-19": [{title: "네 마녀의 날", type: "purple"}, {title: "Juneteenth (휴장)", type: "gray"}],
-        "2026-06-23": [{title: "SI(은) 롤오버 7->9월물", type: "blue"}],
+        "2026-06-05": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-06-10": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-06-11": [{title: "NQ/ES 롤오버", time: "6->9월", type: "blue"}],
+        "2026-06-17": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
+        "2026-06-19": [{title: "네 마녀의 날", time: "종일", type: "purple"}, {title: "Juneteenth", time: "휴장", type: "gray"}],
+        "2026-06-23": [{title: "SI(은) 롤오버", time: "7->9월", type: "blue"}],
 
-        "2026-07-02": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-07-03": [{title: "Independence (휴장)", type: "gray"}],
-        "2026-07-14": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-07-17": [{title: "옵션 만기일", type: "purple"}],
-        "2026-07-23": [{title: "GC(금) 롤오버 8->12월물", type: "blue"}],
-        "2026-07-29": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+        "2026-07-02": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-07-03": [{title: "Independence", time: "휴장", type: "gray"}],
+        "2026-07-14": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-07-17": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-07-23": [{title: "GC(금) 롤오버", time: "8->12월", type: "blue"}],
+        "2026-07-29": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
 
-        "2026-08-07": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-08-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-08-21": [{title: "옵션 만기일", type: "purple"}],
-        "2026-08-24": [{title: "SI(은) 롤오버 9->12월물", type: "blue"}],
+        "2026-08-07": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-08-12": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-08-21": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-08-24": [{title: "SI(은) 롤오버", time: "9->12월", type: "blue"}],
 
-        "2026-09-04": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-09-07": [{title: "Labor Day (휴장)", type: "gray"}],
-        "2026-09-10": [{title: "NQ/ES 롤오버 9->12월물", type: "blue"}],
-        "2026-09-11": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-09-16": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-09-18": [{title: "네 마녀의 날", type: "purple"}],
+        "2026-09-04": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-09-07": [{title: "Labor Day", time: "휴장", type: "gray"}],
+        "2026-09-10": [{title: "NQ/ES 롤오버", time: "9->12월", type: "blue"}],
+        "2026-09-11": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-09-16": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
+        "2026-09-18": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
 
-        "2026-10-02": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-10-14": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-10-16": [{title: "옵션 만기일", type: "purple"}],
-        "2026-10-28": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
+        "2026-10-02": [{title: "Non-Farm 고용", time: "21:30 KST", type: "red"}],
+        "2026-10-14": [{title: "CPI 발표", time: "21:30 KST", type: "red"}],
+        "2026-10-16": [{title: "옵션 만기일", time: "종일", type: "purple"}],
+        "2026-10-28": [{title: "FOMC 금리결정", time: "03:00 KST", type: "red"}],
 
-        "2026-11-06": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-11-12": [{title: "CPI 발표 08:30 ET", type: "red"}],
-        "2026-11-20": [{title: "옵션 만기일", type: "purple"}, {title: "GC(금) 롤오버 12->2월물", type: "blue"}],
-        "2026-11-23": [{title: "SI(은) 롤오버 12->3월물", type: "blue"}],
-        "2026-11-26": [{title: "Thanksgiving (휴장)", type: "gray"}],
-        "2026-11-27": [{title: "조기폐장 13:00 ET", type: "gray"}],
+        "2026-11-06": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}], // 서머타임 해제 이후
+        "2026-11-12": [{title: "CPI 발표", time: "22:30 KST", type: "red"}],
+        "2026-11-20": [{title: "옵션 만기일", time: "종일", type: "purple"}, {title: "GC(금) 롤오버", time: "12->2월", type: "blue"}],
+        "2026-11-23": [{title: "SI(은) 롤오버", time: "12->3월", type: "blue"}],
+        "2026-11-26": [{title: "Thanksgiving", time: "휴장", type: "gray"}],
+        "2026-11-27": [{title: "조기폐장", time: "03:00 KST", type: "gray"}],
 
-        "2026-12-04": [{title: "Non-Farm 고용 08:30 ET", type: "red"}],
-        "2026-12-09": [{title: "FOMC 금리결정 14:00 ET", type: "red"}],
-        "2026-12-10": [{title: "CPI 발표 08:30 ET", type: "red"}, {title: "NQ/ES 롤오버 12->3월물", type: "blue"}],
-        "2026-12-18": [{title: "네 마녀의 날", type: "purple"}],
-        "2026-12-24": [{title: "조기폐장 13:00 ET", type: "gray"}],
-        "2026-12-25": [{title: "Christmas (휴장)", type: "gray"}]
+        "2026-12-04": [{title: "Non-Farm 고용", time: "22:30 KST", type: "red"}],
+        "2026-12-09": [{title: "FOMC 금리결정", time: "04:00 KST", type: "red"}],
+        "2026-12-10": [{title: "CPI 발표", time: "22:30 KST", type: "red"}, {title: "NQ/ES 롤오버", time: "12->3월", type: "blue"}],
+        "2026-12-18": [{title: "네 마녀의 날", time: "종일", type: "purple"}],
+        "2026-12-24": [{title: "조기폐장", time: "03:00 KST", type: "gray"}],
+        "2026-12-25": [{title: "Christmas", time: "휴장", type: "gray"}]
     };
 
     let currentYear = 2026;
@@ -182,7 +184,12 @@
                 let eventsHtml = '';
                 if (eventsData[dateString]) {
                     eventsData[dateString].forEach(ev => {
-                        eventsHtml += `<span class="event-badge badge-${ev.type}">${ev.title}</span>`;
+                        eventsHtml += `
+                            <div class="event-badge badge-${ev.type}">
+                                <span class="event-title">${ev.title}</span>
+                                <span class="event-time">${ev.time}</span>
+                            </div>
+                        `;
                     });
                 }
 
