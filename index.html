@@ -2,105 +2,367 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>트레이딩 일관성 계산기</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>트레이딩 허브 (경제 캘린더 & 일관성 계산기)</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f4f7f6; padding: 30px; }
-        .container { max-width: 520px; margin: 0 auto; background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-        h2 { color: #333; text-align: center; margin-bottom: 25px; }
-        .input-group { margin-bottom: 18px; }
-        label { display: block; margin-bottom: 6px; font-weight: bold; color: #444; }
-        input { width: 100%; padding: 10px; box-sizing: border-box; border: 1px solid #ddd; border-radius: 6px; font-size: 15px; }
-        .hint { font-size: 12px; color: #777; margin-top: 4px; display: block; }
-        button { width: 100%; background-color: #007bff; color: white; border: none; padding: 12px; border-radius: 6px; font-size: 16px; cursor: pointer; font-weight: bold; margin-top: 10px; }
-        button:hover { background-color: #0056b3; }
-        .result { margin-top: 20px; padding: 15px; border-radius: 6px; font-size: 15px; line-height: 1.6; }
-        .pass { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-        .fail { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-        .info { background-color: #e2e3e5; color: #383d41; border: 1px solid #d6d8db; }
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+            --border-color: #e2e8f0;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        /* 탭 메뉴 스타일 */
+        .tab-menu {
+            display: flex;
+            background: #e2e8f0;
+            border-radius: 12px;
+            padding: 6px;
+            margin-bottom: 24px;
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: transparent;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-sub);
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--card-bg);
+            color: var(--primary-color);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        /* 컨텐츠 뷰 스타일 */
+        .view-section {
+            display: none;
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        .view-section.active {
+            display: block;
+        }
+
+        /* 공통 타이틀 */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- 트레이딩 일관성 계산기 스타일 --- */
+        .calc-group {
+            margin-bottom: 16px;
+        }
+
+        .calc-group label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .calc-group input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 16px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .calc-group input:focus {
+            border-color: var(--primary-color);
+        }
+
+        .calc-group .help-text {
+            font-size: 12px;
+            color: var(--text-sub);
+            margin-top: 4px;
+        }
+
+        .calc-btn {
+            width: 100%;
+            padding: 14px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.2s;
+        }
+
+        .calc-btn:hover {
+            background: var(--primary-hover);
+        }
+
+        .result-box {
+            margin-top: 24px;
+            background: #fff1f2;
+            border: 1px solid #fecdd3;
+            border-radius: 12px;
+            padding: 16px;
+            display: none;
+        }
+
+        .result-box.show {
+            display: block;
+        }
+
+        .result-title {
+            font-weight: 700;
+            color: #e11d48;
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .result-item {
+            font-size: 14px;
+            margin-bottom: 8px;
+            line-height: 1.5;
+        }
+
+        .result-status {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px dashed #fecdd3;
+            font-weight: 700;
+            color: #e11d48;
+        }
+
+        /* --- 비타민 경제 캘린더 스타일 --- */
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+            text-align: center;
+        }
+
+        .day-name {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-sub);
+            padding: 8px 0;
+        }
+
+        .day-cell {
+            min-height: 80px;
+            background: #f8fafc;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 4px;
+            font-size: 13px;
+            text-align: left;
+        }
+
+        .day-cell.other-month {
+            opacity: 0.3;
+        }
+
+        .date-num {
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .event-badge {
+            font-size: 10px;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 2px 4px;
+            border-radius: 4px;
+            margin-bottom: 2px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>🎯 트레이딩 일관성 계산기</h2>
-    
-    <div class="input-group">
-        <label>총 목표 수익 ($)</label>
-        <input type="number" id="targetProfit" value="3000">
-    </div>
-    
-    <div class="input-group">
-        <label>일관성 제한 비율 (%)</label>
-        <input type="number" id="consistencyLimit" value="50">
-        <span class="hint">예: 50 입력 시, 하루 수익이 총 목표 수익의 50%를 초과할 수 없음</span>
-    </div>
-    
-    <div class="input-group">
-        <label>날짜별 일일 수익 입력 (쉼표로 구분)</label>
-        <input type="text" id="dailyProfits" placeholder="예: 1800 또는 1000, 800">
-        <span class="hint">거래한 날들의 수익금을 콤마(,)로 구분해서 적어주세요.</span>
+    <!-- 상단 탭 메뉴 -->
+    <div class="tab-menu">
+        <button class="tab-btn active" onclick="switchTab('calendar')">📅 경제 캘린더</button>
+        <button class="tab-btn" onclick="switchTab('calculator')">🎯 일관성 계산기</button>
     </div>
 
-    <button onclick="calculateConsistency()">일관성 계산하기</button>
+    <!-- 1. 경제 캘린더 뷰 -->
+    <div id="calendar-view" class="view-section active">
+        <div class="section-title">📅 비타민 경제 캘린더 (2026 KST)</div>
+        <div class="calendar-header">
+            <span id="current-month-label">2026년 8월</span>
+        </div>
+        <div class="calendar-grid">
+            <div class="day-name" style="color:red;">일</div>
+            <div class="day-name">월</div>
+            <div class="day-name">화</div>
+            <div class="day-name">수</div>
+            <div class="day-name">목</div>
+            <div class="day-name">금</div>
+            <div class="day-name" style="color:blue;">토</div>
+        </div>
+        <div id="calendar-days" class="calendar-grid" style="margin-top: 4px;">
+            <!-- 캘린더 날짜 그리드가 여기에 동적으로 채워집니다 -->
+        </div>
+    </div>
 
-    <div id="resultBox" class="result" style="display:none;"></div>
+    <!-- 2. 트레이딩 일관성 계산기 뷰 -->
+    <div id="calculator-view" class="view-section">
+        <div class="section-title">🎯 트레이딩 일관성 계산기</div>
+        
+        <div class="calc-group">
+            <label>총 목표 수익 ($)</label>
+            <input type="number" id="target-profit" placeholder="3000" value="3000">
+        </div>
+
+        <div class="calc-group">
+            <label>일관성 제한 비율 (%)</label>
+            <input type="number" id="consistency-limit" placeholder="50" value="50">
+            <div class="help-text">예: 50 입력 시, 하루 수익이 총 목표 수익의 50%를 초과할 수 없음</div>
+        </div>
+
+        <div class="calc-group">
+            <label>날짜별 일일 수익 입력 (쉼표로 구분)</label>
+            <input type="text" id="daily-profits" placeholder="예: 1800 또는 1000, 800" value="1800">
+            <div class="help-text">거래한 날들의 수익금을 콤마(,)로 구분해서 적어주세요.</div>
+        </div>
+
+        <button class="calc-btn" onclick="calculateConsistency()">일관성 계산하기</button>
+
+        <div id="result-box" class="result-box">
+            <div class="result-title">📊 계산 결과 요약</div>
+            <div id="result-content"></div>
+        </div>
+    </div>
 </div>
 
 <script>
-function calculateConsistency() {
-    const target = parseFloat(document.getElementById('targetProfit').value);
-    const limitPercent = parseFloat(document.getElementById('consistencyLimit').value);
-    const rawInput = document.getElementById('dailyProfits').value;
-    
-    const resultBox = document.getElementById('resultBox');
-    resultBox.style.display = 'block';
+    /* 탭 전환 함수 */
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.view-section').forEach(sec => sec.classList.remove('active'));
 
-    if (isNaN(target) || isNaN(limitPercent) || !rawInput.trim()) {
-        resultBox.className = 'result fail';
-        resultBox.innerHTML = '⚠️ 모든 항목을 올바르게 입력해주세요.';
-        return;
+        if (tabName === 'calendar') {
+            document.querySelector('.tab-btn:nth-child(1)').classList.add('active');
+            document.getElementById('calendar-view').classList.add('active');
+        } else {
+            document.querySelector('.tab-btn:nth-child(2)').classList.add('active');
+            document.getElementById('calculator-view').classList.add('active');
+        }
     }
 
-    const profits = rawInput.split(',').map(item => parseFloat(item.trim())).filter(item => !isNaN(item));
-    
-    if (profits.length === 0) {
-        resultBox.className = 'result fail';
-        resultBox.innerHTML = '⚠️ 올바른 형식의 수익 데이터를 입력해주세요.';
-        return;
+    /* 일관성 계산기 로직 */
+    function calculateConsistency() {
+        const target = parseFloat(document.getElementById('target-profit').value) || 0;
+        const limitPercent = parseFloat(document.getElementById('consistency-limit').value) || 0;
+        const profitsInput = document.getElementById('daily-profits').value;
+
+        // 쉼표 기준으로 파싱
+        const profits = profitsInput.split(',').map(item => parseFloat(item.trim())).filter(num => !isNaN(num));
+
+        if (profits.length === 0) {
+            alert('올바른 일일 수익 데이터를 입력해주세요.');
+            return;
+        }
+
+        const totalEarned = profits.reduce((a, b) => a + b, 0);
+        const maxAllowedDaily = target * (limitPercent / 100);
+        const maxActualDaily = Math.max(...profits);
+        
+        let excessAmount = 0;
+        if (maxActualDaily > maxAllowedDaily) {
+            excessAmount = maxActualDaily - maxAllowedDaily;
+        }
+
+        const penalty = excessAmount * 2;
+        let finalRemaining = target - totalEarned + penalty;
+        if (finalRemaining < 0) finalRemaining = 0;
+
+        const isFailed = maxActualDaily > maxAllowedDaily;
+
+        const resultContent = document.getElementById('result-content');
+        resultContent.innerHTML = `
+            <div class="result-item">• 총 달성 누적 수익: <b>$${totalEarned.toLocaleString()}</b> / 목표 $${target.toLocaleString()}</div>
+            <div class="result-item">• 일일 최대 허용 한도 (${limitPercent}%): <b>$${maxAllowedDaily.toLocaleString()}</b></div>
+            <div class="result-item">• 내가 기록한 최고 하루 수익: <b>$${maxActualDaily.toLocaleString()}</b></div>
+            <div class="result-item">• 일관성 초과 금액: <b>$${excessAmount.toLocaleString()}</b></div>
+            <div class="result-item">• 초과 금액의 2배 페널티: <b>+$${penalty.toLocaleString()}</b></div>
+            <div class="result-item">• 페널티 반영된 최종 남은 금액: <b>$${finalRemaining.toLocaleString()}</b></div>
+            <div class="result-status">
+                ${isFailed ? '❌ 결과: 일관성 규칙 위반 (Failed)<br><span style="font-weight:normal; font-size:13px; color:#333;">최고 하루 수익이 허용 한도를 초과하여, 초과분의 2배($' + penalty.toLocaleString() + ')가 추가 목표로 부과됩니다.</span>' : '✅ 결과: 일관성 준수 성공 (Passed)'}
+            </div>
+        `;
+
+        document.getElementById('result-box').classList.add('show');
     }
 
-    const maxAllowedDayProfit = target * (limitPercent / 100);
-    const totalProfit = profits.reduce((a, b) => a + b, 0);
-    const maxDayProfit = Math.max(...profits);
-    let remainingProfit = target - totalProfit;
-
-    let html = `<b>📊 계산 결과 요약</b><hr>`;
-    html += `• 총 달성 누적 수익: <b>$${totalProfit.toLocaleString()}</b> / 목표 $${target.toLocaleString()}<br>`;
-    html += `• 일일 최대 허용 한도 (${limitPercent}%): <b>$${maxAllowedDayProfit.toLocaleString()}</b><br>`;
-    html += `• 내가 기록한 최고 하루 수익: <b>$${maxDayProfit.toLocaleString()}</b><br>`;
-
-    if (maxDayProfit > maxAllowedDayProfit) {
-        const excessProfit = maxDayProfit - maxAllowedDayProfit; // 초과한 금액
-        const penaltyProfit = excessProfit * 2; // 초과한 금액의 2배
-        const adjustedRemaining = remainingProfit + penaltyProfit; // 페널티가 반영된 최종 남은 금액
-
-        resultBox.className = 'result fail';
-        html += `• 일관성 초과 금액: <b>$${excessProfit.toLocaleString()}</b><br>`;
-        html += `• 초과 금액의 2배 페널티: <b>+$${penaltyProfit.toLocaleString()}</b><br>`;
-        html += `• 페널티 반영된 최종 남은 금액: <b>$${adjustedRemaining > 0 ? adjustedRemaining.toLocaleString() : 0}</b><br><hr>`;
-        html += `❌ <b>결과: 일관성 규칙 위반 (Failed)</b><br>최고 하루 수익이 허용 한도를 초과하여, 초과분의 2배($${penaltyProfit.toLocaleString()})가 추가 목표로 부과되었습니다.<br>(최종 채워야 할 남은 금액: $${adjustedRemaining > 0 ? adjustedRemaining.toLocaleString() : 0})`;
-    } else if (totalProfit < target) {
-        resultBox.className = 'result info';
-        html += `• 목표까지 남은 금액: <b>$${remainingProfit.toLocaleString()}</b><br><hr>`;
-        html += `⏳ <b>결과: 진행 중 (In Progress)</b><br>현재까지 일관성 규칙은 안전하며, 목표까지 $${remainingProfit.toLocaleString()} 남았습니다.`;
-    } else {
-        resultBox.className = 'result pass';
-        html += `• 목표까지 남은 금액: <b>$0</b><br><hr>`;
-        html += `🎉 <b>결과: 일관성 통과 성공 (Passed)</b><br>목표 수익 달성과 일관성 규칙을 모두 충족했습니다!`;
+    /* 간단한 2026년 8월 캘린더 렌더링 예시 */
+    function renderCalendar() {
+        const grid = document.getElementById('calendar-days');
+        grid.innerHTML = '';
+        // 2026년 8월 달력 기본 렌더링 (토요일 시작 등 맞춰서 구성 가능)
+        // 예시로 비어있는 셀 및 간단한 이벤트 배치
+        for (let i = 1; i <= 31; i++) {
+            const cell = document.createElement('div');
+            cell.className = 'day-cell';
+            cell.innerHTML = `<div class="date-num">${i}</div>`;
+            if (i === 12) {
+                cell.innerHTML += `<div class="event-badge">CPI 발표 (21:30)</div>`;
+            }
+            if (i === 19) {
+                cell.innerHTML += `<div class="event-badge">FOMC (03:00)</div>`;
+            }
+            grid.appendChild(cell);
+        }
     }
 
-    resultBox.innerHTML = html;
-}
+    renderCalendar();
 </script>
 
 </body>
