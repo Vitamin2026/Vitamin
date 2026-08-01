@@ -24,20 +24,22 @@
 
         table { width: 100%; border-collapse: collapse; table-layout: fixed; }
         th { background: #fff; color: #333; font-size: 13px; padding: 8px 0; border-bottom: 2px solid #ddd; }
-        td { height: 100px; border: 1px solid #e9ecef; vertical-align: top; padding: 3px; font-size: 10px; background: #fff; }
+        
+        /* 날짜 칸 높이를 더 넉넉하게 확장 */
+        td { height: 115px; border: 1px solid #e9ecef; vertical-align: top; padding: 2px; font-size: 10px; background: #fff; }
         td.other-month { background: #fdfdfd; color: #bbb; }
         
-        .day-num { font-weight: bold; margin-bottom: 3px; font-size: 11px; text-align: right; padding-right: 2px; }
+        .day-num { font-weight: bold; margin-bottom: 2px; font-size: 11px; text-align: right; padding-right: 2px; }
         
-        /* 세로 배치 스타일 적용 */
-        .event-badge { font-size: 9px; padding: 4px 6px; border-radius: 4px; margin-bottom: 3px; color: #fff; display: flex; flex-direction: column; gap: 2px; }
+        /* 배지 스타일 최적화 (글자 잘림 방지 및 세로 정렬) */
+        .event-badge { font-size: 9px; padding: 3px 4px; border-radius: 4px; margin-bottom: 3px; color: #fff; display: flex; flex-direction: column; gap: 1px; }
         .badge-blue { background-color: #007bff; }
         .badge-red { background-color: #dc3545; }
         .badge-purple { background-color: #6f42c1; }
         .badge-gray { background-color: #6c757d; }
         
-        .event-title { font-weight: bold; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .event-time { background: rgba(0,0,0,0.2); padding: 1px 4px; border-radius: 2px; font-size: 8px; align-self: flex-start; white-space: nowrap; }
+        .event-title { font-weight: bold; font-size: 9px; word-break: keep-all; line-height: 1.1; }
+        .event-time { background: rgba(0,0,0,0.2); padding: 1px 3px; border-radius: 2px; font-size: 8px; align-self: flex-start; white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -210,7 +212,7 @@
         bodyEl.innerHTML = html;
     }
 
-    function changeMonth(direction) {
+    changeMonth = function(direction) {
         currentMonth += direction;
         if (currentMonth > 11) {
             currentMonth = 0;
@@ -220,14 +222,14 @@
             currentYear--;
         }
         renderCalendar(currentYear, currentMonth);
-    }
+    };
 
-    function goToday() {
+    goToday = function() {
         const now = new Date();
         currentYear = now.getFullYear();
         currentMonth = now.getMonth();
         renderCalendar(currentYear, currentMonth);
-    }
+    };
 
     renderCalendar(currentYear, currentMonth);
 </script>
